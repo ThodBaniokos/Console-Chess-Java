@@ -49,8 +49,8 @@ public class Game {
 
         this.movesMade = new LinkedHashMap<>();
 
-        this.movesMade.put(Color.WHITE, new ArrayList<Pair<Location,Location>>());
-        this.movesMade.put(Color.BLACK, new ArrayList<Pair<Location,Location>>());
+        this.movesMade.put(Color.WHITE, new ArrayList<Pair<Location, Location>>());
+        this.movesMade.put(Color.BLACK, new ArrayList<Pair<Location, Location>>());
 
         this.hasPawnMoved = new LinkedHashMap<>();
 
@@ -67,11 +67,13 @@ public class Game {
 
         boolean isRunning = true;
 
+        System.out.println("New game started, you can also load a saved game using the command :o");
         while (isRunning) {
 
             try {
                 System.out.println(gameBoard.toString());
 
+                System.out.println("Currently playing: " + this.playingColor);
                 System.out.println("Type your next move or a command, for a list of commands type :h");
                 userInput = this.inputStream.readLine();
 
@@ -192,6 +194,9 @@ public class Game {
             if (fLocation.getCol() != tLocation.getCol() && this.gameBoard.getPieceAt(tLocation) == null)
                 throw new InvalidMoveException("Given move of Pawn piece do not have the same column");
 
+            if (fLocation.getCol() != tLocation.getCol() && (this.gameBoard.getPieceAt(tLocation) != null && this.gameBoard.getPieceAt(tLocation).color == movingPiece.color))
+                throw new InvalidMoveException("Given move of " + this.playingColor + " Pawn piece cannot go on top of another " + this.playingColor + " piece");
+
             if (this.gameBoard.freeVerticalPath(fLocation, tLocation) == false)
                 throw new InvalidMoveException("Pawn piece cannot go over other pieces");
 
@@ -200,7 +205,7 @@ public class Game {
 
         movingPiece.moveTo(tLocation);
 
-        movesMade.get(this.playingColor).add(new Pair<Location,Location>(fLocation, tLocation));
+        movesMade.get(this.playingColor).add(new Pair<Location, Location>(fLocation, tLocation));
 
         this.playingColor = this.playingColor.nextColor();
 
@@ -227,6 +232,8 @@ public class Game {
 
         savefileReader.close();
 
+        System.out.println("Loaded file: " + userInput + ".txt");
+
         return;
     }
 
@@ -248,7 +255,6 @@ public class Game {
 
         while (moveNumber < Math.max(this.movesMade.get(Color.WHITE).size(), this.movesMade.get(Color.BLACK).size())) {
 
-
             if (this.movesMade.get(Color.BLACK).size() <= moveNumber && color == Color.BLACK) {
                 moveNumber++;
                 continue;
@@ -256,13 +262,14 @@ public class Game {
 
             Pair<Location, Location> locationPair = this.movesMade.get(color).get(moveNumber);
 
-            String toWrite = locationPair.firstObj.toString() + locationPair.secondObj.toString() + "\n";
+            String toWrite = locationPair.firstObj.toString() + ", " + locationPair.secondObj.toString() + "\n";
 
             fileWriter.write(toWrite);
 
             color = color.nextColor();
 
-            if (color == Color.WHITE) moveNumber++;
+            if (color == Color.WHITE)
+                moveNumber++;
         }
 
         fileWriter.close();
