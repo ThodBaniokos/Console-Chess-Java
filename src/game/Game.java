@@ -16,6 +16,8 @@ import enums.Color;
 import exceptions.InvalidLocationException;
 import exceptions.InvalidMoveException;
 import location.Location;
+import piece.Pawn;
+import piece.Piece;
 
 public class Game {
 
@@ -31,9 +33,11 @@ public class Game {
 
     private BufferedReader inputStream;
 
-    private Color playingColor;
+    private Color playingColor = Color.WHITE;
 
     private final String invalidLocationErrorMessage = ": Not a valid move\nA valid move is four characters long, with a column range between [a, h] and a row range between [1, 8] (ex. a2a3)";
+    private final String noPieceInFromLocationErrorMessage = "There is not a piece present in the selected starting location : ";
+    private final String movingOpposingPlayersPiece = "Trying to move a " + this.playingColor.nextColor() + " piece when it is " + this.playingColor + "'s turn";
 
     public Game(Board board) throws FileNotFoundException {
 
@@ -53,8 +57,6 @@ public class Game {
         String userInput;
 
         boolean isRunning = true;
-
-        this.playingColor = Color.WHITE;
 
         while (isRunning) {
 
@@ -115,10 +117,8 @@ public class Game {
         return false;
     }
 
-    private boolean isValidMove(String moveString) {
+    private boolean isValidInputMove(String moveString) {
 
-        // moveString.length() > 4 || this.isInBoundsLetter(moveString.charAt(0)) ==
-        // false || this.isInBoundsLetter(moveString.charAt(2)) == false
         if (moveString.length() != 4)
             return false;
 
@@ -139,10 +139,28 @@ public class Game {
 
     private void handleInput(String moveString) throws InvalidLocationException, InvalidMoveException {
 
-        if (this.isValidMove(moveString) == false) {
+        if (this.isValidInputMove(moveString) == false) {
 
             throw new InvalidLocationException(moveString + this.invalidLocationErrorMessage);
         }
+
+        String fromLocation = moveString.substring(0, 2);
+        String toLocation = moveString.substring(2, 4);
+
+        Piece fromPiece = this.gameBoard.getPieceAt(new Location(fromLocation));
+
+        if (fromPiece == null) {
+
+            throw new InvalidMoveException(this.noPieceInFromLocationErrorMessage + fromLocation);
+        }
+
+        if (fromPiece.color != this.playingColor) {
+            throw new InvalidMoveException(this.movingOpposingPlayersPiece);
+        }
+
+        // if (fromPiece instanceof Pawn) {
+
+        // }
 
         return;
     }
