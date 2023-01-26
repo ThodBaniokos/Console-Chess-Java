@@ -27,5 +27,5 @@ public abstract class Piece {
      * Impements a move to a new location specified by newLoc
      * @param newLoc end location of the current played move
      */
-    abstract void moveTo(Location newLoc);
+    public abstract void moveTo(Location newLoc);
 }

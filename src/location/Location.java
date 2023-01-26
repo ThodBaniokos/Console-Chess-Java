@@ -12,6 +12,7 @@ public class Location {
      * Constructor accepting two integers between [1, 8]
      * actual values that are stored are between [0, 7]
      * cannot throw exception
+     *
      * @param r row of the chess board
      * @param c column of the chess board
      */
@@ -28,7 +29,8 @@ public class Location {
     /**
      * Constructor accepting a string of starting location of the form "a1"
      * length is always two but the input string might not be acceptible
-     * @param loc
+     *
+     * @param loc represents a location on the chess board
      */
     public Location(String loc) {
 
@@ -47,7 +49,7 @@ public class Location {
         }
 
         // check if row is valid
-        if (row >= '0' && row <= '7') {
+        if (row >= '1' && row <= '8') {
 
             // System.out.println("valid row");
 
@@ -57,6 +59,7 @@ public class Location {
 
     /**
      * Public getter for the row of the current location
+     *
      * @return integer representing the row of the location
      */
     public int getRow() {
@@ -67,6 +70,7 @@ public class Location {
 
     /**
      * Public getter for the column of the current location
+     *
      * @return integer representing the column of the location
      */
     public int getCol() {
@@ -77,6 +81,7 @@ public class Location {
 
     /**
      * override of toString method for class Location
+     *
      * @return the location in the form of "a1"
      */
     @Override

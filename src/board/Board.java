@@ -24,7 +24,7 @@ public class Board {
 
         // create the white pieces first
         for (int i = 0; i < 8; i++) {
-            this.board[1][i] = new Pawn(Color.WHITE, new Location(1, i + 1), this);
+            this.board[1][i] = new Pawn(Color.WHITE, new Location(2, i + 1), this);
         }
 
         this.board[0][0] = new Rook(Color.WHITE, new Location(1, 1), this);
@@ -39,7 +39,7 @@ public class Board {
         // create the black pieces
         for (int i = 0; i < 8; i++) {
 
-            this.board[6][i] = new Pawn(Color.BLACK, new Location(1, i + 1), this);
+            this.board[6][i] = new Pawn(Color.BLACK, new Location(7, i + 1), this);
         }
 
         this.board[7][0] = new Rook(Color.BLACK, new Location(1, 1), this);
@@ -50,6 +50,28 @@ public class Board {
         this.board[7][5] = new Bishop(Color.BLACK, new Location(1, 6), this);
         this.board[7][6] = new Knight(Color.BLACK, new Location(1, 7), this);
         this.board[7][7] = new Rook(Color.BLACK, new Location(1, 8), this);
+    }
+
+    public void movePiece(Location from, Location to) {
+
+        Piece movingPiece = this.getPieceAt(from);
+
+        this.board[from.getRow()][from.getCol()] = null;
+
+        this.board[to.getRow()][to.getCol()] = movingPiece;
+
+        movingPiece.location = to;
+    }
+
+    public void movePieceCapturing(Location from, Location to) {
+
+        this.board[to.getRow()][to.getCol()] = null;
+
+        Piece movingPiece = this.getPieceAt(from);
+
+        this.board[from.getRow()][from.getCol()] = null;
+
+        this.board[to.getRow()][to.getCol()] = movingPiece;
     }
 
     public Piece getPieceAt(Location loc) {

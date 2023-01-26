@@ -6,8 +6,6 @@ import location.Location;
 
 public class Pawn extends Piece {
 
-    private boolean isFirstMove;
-
     /**
      * Constructor of the Pawn class, child of abstract class Piece
      * calls the constructor of the parent class
@@ -19,8 +17,6 @@ public class Pawn extends Piece {
 
         // call the parent class constructor
         super(color, location, board);
-
-        this.isFirstMove = true;
     }
 
     /**
@@ -29,16 +25,21 @@ public class Pawn extends Piece {
      */
     public void moveTo(Location newLoc) {
 
+        if (this.board.getPieceAt(newLoc) != null) {
+
+            this.board.movePieceCapturing(this.location, newLoc);
+
+            return;
+        }
+
+        this.board.movePiece(this.location, newLoc);
+
+        return;
     }
 
     public Color getColor() {
 
         return this.color;
-    }
-
-    public boolean hasMoved() {
-
-        return !isFirstMove;
     }
 
     /**
