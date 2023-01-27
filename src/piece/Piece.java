@@ -2,6 +2,7 @@ package piece;
 
 import board.Board;
 import enums.Color;
+import exceptions.InvalidMoveException;
 import location.Location;
 
 public abstract class Piece {
@@ -26,6 +27,7 @@ public abstract class Piece {
     /**
      * Impements a move to a new location specified by newLoc
      * @param newLoc end location of the current played move
+     * @throws InvalidMoveException
      */
-    public abstract void moveTo(Location newLoc);
+    public abstract void moveTo(Location newLoc) throws InvalidMoveException;
 }

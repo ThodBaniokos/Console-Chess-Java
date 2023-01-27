@@ -3,12 +3,16 @@ package board;
 import location.Location;
 import piece.*;
 
+import java.util.LinkedHashMap;
+
 import enums.*;
 
 public class Board {
 
     private final int boardRows = 8;
     private final int boardColumns = 8;
+
+    public LinkedHashMap<Piece, Boolean> hasPawnMoved;
 
     public Piece[][] board;
 
@@ -18,6 +22,8 @@ public class Board {
     }
 
     public void init() {
+
+        this.hasPawnMoved = new LinkedHashMap<>();
 
         // initiaze empty board of pieces
         this.board = new Piece[this.boardRows][this.boardColumns];
@@ -42,14 +48,14 @@ public class Board {
             this.board[6][i] = new Pawn(Color.BLACK, new Location(7, i + 1), this);
         }
 
-        this.board[7][0] = new Rook(Color.BLACK, new Location(1, 1), this);
-        this.board[7][1] = new Knight(Color.BLACK, new Location(1, 2), this);
-        this.board[7][2] = new Bishop(Color.BLACK, new Location(1, 3), this);
-        this.board[7][3] = new Queen(Color.BLACK, new Location(1, 4), this);
-        this.board[7][4] = new King(Color.BLACK, new Location(1, 5), this);
-        this.board[7][5] = new Bishop(Color.BLACK, new Location(1, 6), this);
-        this.board[7][6] = new Knight(Color.BLACK, new Location(1, 7), this);
-        this.board[7][7] = new Rook(Color.BLACK, new Location(1, 8), this);
+        this.board[7][0] = new Rook(Color.BLACK, new Location(8, 1), this);
+        this.board[7][1] = new Knight(Color.BLACK, new Location(8, 2), this);
+        this.board[7][2] = new Bishop(Color.BLACK, new Location(8, 3), this);
+        this.board[7][3] = new Queen(Color.BLACK, new Location(8, 4), this);
+        this.board[7][4] = new King(Color.BLACK, new Location(8, 5), this);
+        this.board[7][5] = new Bishop(Color.BLACK, new Location(8, 6), this);
+        this.board[7][6] = new Knight(Color.BLACK, new Location(8, 7), this);
+        this.board[7][7] = new Rook(Color.BLACK, new Location(8, 8), this);
     }
 
     public void movePiece(Location from, Location to) {
@@ -94,7 +100,7 @@ public class Board {
             biggerColumn = from.getCol() + 1;
         }
 
-        for (int i = smallestColumn; i < biggerColumn; i++) {
+        for (int i = smallestColumn; i < biggerColumn - 1; i++) {
 
             if (this.board[row][i] != null) {
                 return false;
@@ -118,7 +124,7 @@ public class Board {
             biggerRow = from.getRow() - 1;
         }
 
-        for (int i = smallestRow; i < biggerRow; i++) {
+        for (int i = smallestRow; i < biggerRow - 1; i++) {
 
             if (this.board[i][column] != null) {
                 return false;
@@ -138,7 +144,7 @@ public class Board {
             int tempEndRow = to.getRow();
             int tempEndCol = to.getCol();
 
-            while (tempStartRow >= tempEndRow && tempStartCol >= tempEndCol) {
+            while (tempStartRow > tempEndRow && tempStartCol > tempEndCol) {
 
                 if (this.board[tempStartRow--][tempStartCol--] != null) {
                     return false;
@@ -152,7 +158,7 @@ public class Board {
             int tempEndRow = to.getRow();
             int tempEndCol = to.getCol();
 
-            while (tempStartRow <= tempEndRow && tempStartCol <= tempEndCol) {
+            while (tempStartRow < tempEndRow && tempStartCol < tempEndCol) {
 
                 if (this.board[tempStartRow++][tempStartCol++] != null) {
                     return false;
@@ -173,7 +179,7 @@ public class Board {
             int tempEndRow = to.getRow();
             int tempEndCol = to.getCol();
 
-            while (tempStartRow <= tempEndRow && tempStartCol >= tempEndCol) {
+            while (tempStartRow < tempEndRow && tempStartCol > tempEndCol) {
 
                 if (this.board[tempStartRow++][tempStartCol--] != null) {
                     System.out.println();
@@ -188,7 +194,7 @@ public class Board {
             int tempEndRow = to.getRow();
             int tempEndCol = to.getCol();
 
-            while (tempStartRow >= tempEndRow && tempStartCol <= tempEndCol) {
+            while (tempStartRow > tempEndRow && tempStartCol < tempEndCol) {
 
                 if (this.board[tempStartRow--][tempStartCol++] != null) {
                     return false;
@@ -222,4 +228,10 @@ public class Board {
 
         return gameBoard;
     }
+
+    public int chebyshevDistance(Location from, Location to) {
+
+        return Math.max(Math.abs(from.getRow() - to.getRow()), Math.abs(from.getCol() - to.getCol()));
+    }
+
 }

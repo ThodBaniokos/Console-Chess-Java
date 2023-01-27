@@ -16,9 +16,10 @@ import board.Board;
 import enums.Color;
 import exceptions.InvalidLocationException;
 import exceptions.InvalidMoveException;
+import exceptions.NoInputGivenException;
 import location.Location;
-import piece.Pawn;
 import piece.Piece;
+import errorMessages.ErrorMessages;
 
 public class Game {
 
@@ -30,18 +31,11 @@ public class Game {
     // file containing instruction on how to play the game
     private File helpFile = new File("src/help/help.txt");
 
-    private BufferedReader loadedReader;
+    private BufferedReader helpFileReader;
 
     private BufferedReader inputStream;
 
     private Color playingColor = Color.WHITE;
-
-    private LinkedHashMap<Piece, Boolean> hasPawnMoved;
-
-    private final String invalidLocationErrorMessage = ": Not a valid move\nA valid move is four characters long, with a column range between [a, h] and a row range between [1, 8] (ex. a2a3)";
-    private final String noPieceInFromLocationErrorMessage = "There is not a piece present in the selected starting location : ";
-    private final String movingOpposingPlayersPiece = "Trying to move a " + this.playingColor.nextColor()
-            + " piece when it is " + this.playingColor + "'s turn";
 
     public Game(Board board) throws FileNotFoundException {
 
@@ -52,9 +46,7 @@ public class Game {
         this.movesMade.put(Color.WHITE, new ArrayList<Pair<Location, Location>>());
         this.movesMade.put(Color.BLACK, new ArrayList<Pair<Location, Location>>());
 
-        this.hasPawnMoved = new LinkedHashMap<>();
-
-        this.loadedReader = new BufferedReader(new FileReader(this.helpFile));
+        this.helpFileReader = new BufferedReader(new FileReader(this.helpFile));
 
         this.inputStream = new BufferedReader(new InputStreamReader(System.in));
     }
@@ -68,13 +60,19 @@ public class Game {
         boolean isRunning = true;
 
         System.out.println("New game started, you can also load a saved game using the command :o");
+
+        boolean printGameState = true;
         while (isRunning) {
 
             try {
-                System.out.println(gameBoard.toString());
 
-                System.out.println("Currently playing: " + this.playingColor);
-                System.out.println("Type your next move or a command, for a list of commands type :h");
+                if (printGameState == true) {
+
+                    System.out.println(gameBoard.toString());
+                    System.out.println("Currently playing: " + this.playingColor);
+                    System.out.println("Type your next move or a command, for a list of commands type :h");
+                }
+
                 userInput = this.inputStream.readLine();
 
                 userInput = userInput.trim();
@@ -98,25 +96,19 @@ public class Game {
                         break;
                 }
             } catch (IOException ioException) {
+
                 System.out.println(ioException.getMessage());
-                // ioException.printStackTrace();
             } catch (InvalidLocationException invalidLocException) {
-                System.out.println();
+
                 System.out.println(invalidLocException.getMessage());
-                System.out.println();
-                // invalidLocException.printStackTrace();
             } catch (InvalidMoveException invalidmoveException) {
-                System.out.println();
+
                 System.out.println(invalidmoveException.getMessage());
-                System.out.println();
-                // invalidmoveException.printStackTrace();
+            } catch (NoInputGivenException noInputException) {
+
+                System.out.println(noInputException.getMessage());
             }
         }
-    }
-
-    private int chebyshevDistance(Location from, Location to) {
-
-        return Math.max(Math.abs(from.getRow() - to.getRow()), Math.abs(from.getCol() - to.getCol()));
     }
 
     private boolean isInBoundsLetter(char c) {
@@ -155,52 +147,43 @@ public class Game {
         return true;
     }
 
-    private void handleInput(String moveString) throws InvalidLocationException, InvalidMoveException {
+    private void handleInput(String moveString)
+            throws InvalidLocationException, InvalidMoveException, NoInputGivenException {
+
+        if (moveString.length() == 0) {
+
+            throw new NoInputGivenException(ErrorMessages.noInputGivenErrorMessage);
+        }
 
         if (this.isValidInputMove(moveString) == false) {
 
-            throw new InvalidLocationException(moveString + this.invalidLocationErrorMessage);
+            throw new InvalidLocationException(moveString + ErrorMessages.invalidLocationErrorMessage);
         }
 
-        String fromLocation = moveString.substring(0, 2);
-        String toLocation = moveString.substring(2, 4);
+        Location fLocation = new Location(moveString.substring(0, 2));
+        Location tLocation = new Location(moveString.substring(2, 4));
 
-        Piece movingPiece = this.gameBoard.getPieceAt(new Location(fromLocation));
+        if (fLocation.toString().equals(tLocation.toString())) {
+
+            throw new InvalidLocationException(moveString + ErrorMessages.sameLocationErrorMessage);
+        }
+
+        Piece movingPiece = this.gameBoard.getPieceAt(fLocation);
 
         if (movingPiece == null) {
 
-            throw new InvalidMoveException(this.noPieceInFromLocationErrorMessage + fromLocation);
+            throw new InvalidMoveException(ErrorMessages.noPieceInFromLocationErrorMessage + fLocation.toString());
+        }
+
+        Piece landingSquarePiece = this.gameBoard.getPieceAt(tLocation);
+
+        if (landingSquarePiece != null && movingPiece.color == landingSquarePiece.color) {
+
+            throw new InvalidMoveException(ErrorMessages.cannotStepOnYourPiecesErrorMessage);
         }
 
         if (movingPiece.color != this.playingColor) {
-            throw new InvalidMoveException(this.movingOpposingPlayersPiece);
-        }
-
-        Location fLocation = new Location(fromLocation);
-        Location tLocation = new Location(toLocation);
-
-        int dist = this.chebyshevDistance(fLocation, tLocation);
-
-        if (movingPiece instanceof Pawn) {
-
-            boolean isFirstPawnMove = (hasPawnMoved.get(movingPiece) == null);
-
-            if (isFirstPawnMove == true && dist > 2)
-                throw new InvalidMoveException("Pawn piece cannot move more than two points on it's first move");
-
-            if (isFirstPawnMove == false && dist > 1)
-                throw new InvalidMoveException("Pawn piece cannot move more than one point on it's move");
-
-            if (fLocation.getCol() != tLocation.getCol() && this.gameBoard.getPieceAt(tLocation) == null)
-                throw new InvalidMoveException("Given move of Pawn piece do not have the same column");
-
-            if (fLocation.getCol() != tLocation.getCol() && (this.gameBoard.getPieceAt(tLocation) != null && this.gameBoard.getPieceAt(tLocation).color == movingPiece.color))
-                throw new InvalidMoveException("Given move of " + this.playingColor + " Pawn piece cannot go on top of another " + this.playingColor + " piece");
-
-            if (this.gameBoard.freeVerticalPath(fLocation, tLocation) == false)
-                throw new InvalidMoveException("Pawn piece cannot go over other pieces");
-
-            hasPawnMoved.put(movingPiece, true);
+            throw new InvalidMoveException(ErrorMessages.movingOpposingPlayersPieceErrorMessage);
         }
 
         movingPiece.moveTo(tLocation);
@@ -212,11 +195,30 @@ public class Game {
         return;
     }
 
-    private void openGame() throws IOException, InvalidLocationException, InvalidMoveException {
+    private void openGame() throws IOException, InvalidLocationException, InvalidMoveException, NoInputGivenException {
+
+        System.out.println("New game stopped, do you want to load a saved game? (y/n)");
+
+        String userInput;
+
+        do {
+            userInput = this.inputStream.readLine();
+
+            if (userInput.equals("y") == false && userInput.equals("n") == false) {
+
+                System.out.println("Not acceptable answer, type 'y' for yes and 'n' for no");
+            }
+
+        } while (userInput.equals("y") == false && userInput.equals("n") == false);
+
+        if (userInput.equals("n")) {
+
+            return;
+        }
 
         System.out.println("Type the name of the save file you want to load (without the file extension)");
 
-        String userInput = this.inputStream.readLine();
+        userInput = this.inputStream.readLine();
 
         BufferedReader savefileReader = new BufferedReader(new FileReader("src/saves/" + userInput + ".txt"));
         String fileLine = savefileReader.readLine();
@@ -239,9 +241,28 @@ public class Game {
 
     private void saveGame() throws IOException {
 
-        System.out.println("Type the name of the save file (without the file extension)");
+        System.out.println("Game stopped, do you want to save the game? (y/n)");
 
-        String userInput = this.inputStream.readLine();
+        String userInput;
+
+        do {
+            userInput = this.inputStream.readLine();
+
+            if (userInput.equals("y") == false && userInput.equals("n") == false) {
+
+                System.out.println("Not acceptable answer, type 'y' for yes and 'n' for no");
+            }
+
+        } while (userInput.equals("y") == false && userInput.equals("n") == false);
+
+        if (userInput.equals("n")) {
+
+            return;
+        }
+
+        System.out.println("Type the name of the save file (without the file extension)\nIf you give an existing file the old one will be overwritten");
+
+        userInput = this.inputStream.readLine();
 
         File saveFile = new File("src/saves/" + userInput + ".txt");
 
@@ -281,7 +302,17 @@ public class Game {
 
         System.out.println("Do you want to exit the game? (y/n)");
 
-        String userInput = this.inputStream.readLine();
+        String userInput;
+
+        do {
+            userInput = this.inputStream.readLine();
+
+            if (userInput.equals("y") == false && userInput.equals("n") == false) {
+
+                System.out.println("Not acceptable answer, type 'y' for yes and 'n' for no");
+            }
+
+        } while (userInput.equals("y") == false && userInput.equals("n") == false);
 
         if (userInput.toLowerCase().equals("n"))
             return true;
@@ -293,13 +324,13 @@ public class Game {
 
         System.out.println();
 
-        String fileLine = loadedReader.readLine();
+        String fileLine = helpFileReader.readLine();
 
         while (fileLine != null) {
 
             System.out.println(fileLine);
 
-            fileLine = loadedReader.readLine();
+            fileLine = helpFileReader.readLine();
         }
 
         System.out.println();

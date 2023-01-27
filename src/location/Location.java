@@ -1,5 +1,12 @@
 package location;
 
+/**
+ * Class Location, part of package location
+ * Represents a chess board point, (i.e. 1 of 64 squares)
+ * all coded to coordinates using a row / column system
+ * rows are between 1 and 8
+ * columns are between a and h
+ */
 public class Location {
 
     private int column;
