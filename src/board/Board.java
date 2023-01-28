@@ -11,6 +11,8 @@ public class Board {
 
     private final int boardRows = 8;
     private final int boardColumns = 8;
+    public Location whiteKingLocation;
+    public Location blackKingLocation;
 
     public LinkedHashMap<Piece, Boolean> hasPawnMoved;
 
@@ -42,6 +44,8 @@ public class Board {
         this.board[0][6] = new Knight(Color.WHITE, new Location(1, 7), this);
         this.board[0][7] = new Rook(Color.WHITE, new Location(1, 8), this);
 
+        this.whiteKingLocation = this.board[0][4].location;
+
         // create the black pieces
         for (int i = 0; i < 8; i++) {
 
@@ -56,6 +60,8 @@ public class Board {
         this.board[7][5] = new Bishop(Color.BLACK, new Location(8, 6), this);
         this.board[7][6] = new Knight(Color.BLACK, new Location(8, 7), this);
         this.board[7][7] = new Rook(Color.BLACK, new Location(8, 8), this);
+
+        this.blackKingLocation = this.board[7][4].location;
     }
 
     public void movePiece(Location from, Location to) {
@@ -78,6 +84,8 @@ public class Board {
         this.board[from.getRow()][from.getCol()] = null;
 
         this.board[to.getRow()][to.getCol()] = movingPiece;
+
+        movingPiece.location = to;
     }
 
     public Piece getPieceAt(Location loc) {
@@ -94,13 +102,13 @@ public class Board {
 
         if (from.getCol() < to.getCol()) {
             smallestColumn = from.getCol() + 1;
-            biggerColumn = to.getCol();
+            biggerColumn = to.getCol() - 1;
         } else {
-            smallestColumn = to.getCol();
-            biggerColumn = from.getCol() + 1;
+            smallestColumn = to.getCol() + 1;
+            biggerColumn = from.getCol() - 1;
         }
 
-        for (int i = smallestColumn; i < biggerColumn - 1; i++) {
+        for (int i = smallestColumn; i <= biggerColumn; i++) {
 
             if (this.board[row][i] != null) {
                 return false;
@@ -118,13 +126,13 @@ public class Board {
 
         if (from.getRow() < to.getRow()) {
             smallestRow = from.getRow() + 1;
-            biggerRow = to.getRow();
+            biggerRow = to.getRow() - 1;
         } else {
-            smallestRow = to.getRow();
+            smallestRow = to.getRow() + 1;
             biggerRow = from.getRow() - 1;
         }
 
-        for (int i = smallestRow; i < biggerRow - 1; i++) {
+        for (int i = smallestRow; i <= biggerRow; i++) {
 
             if (this.board[i][column] != null) {
                 return false;
@@ -203,6 +211,19 @@ public class Board {
         }
 
         return true;
+    }
+
+    public boolean knightMoveCheck(int startingColumn, int endingColumn, int startingRow, int endingRow) {
+
+        if ((startingColumn + 1 == endingColumn || startingColumn - 1 == endingColumn)
+                && (startingRow + 2 == endingRow || startingRow - 2 == endingRow))
+            return true;
+
+        if ((startingColumn + 2 == endingColumn || startingColumn - 2 == endingColumn)
+                && (startingRow + 1 == endingRow || startingRow - 1 == endingRow))
+            return true;
+
+        return false;
     }
 
     @Override

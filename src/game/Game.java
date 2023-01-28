@@ -14,11 +14,18 @@ import java.util.List;
 import Pair.Pair;
 import board.Board;
 import enums.Color;
+import exceptions.GameoverException;
 import exceptions.InvalidLocationException;
 import exceptions.InvalidMoveException;
 import exceptions.NoInputGivenException;
 import location.Location;
+import piece.Bishop;
+import piece.King;
+import piece.Knight;
+import piece.Pawn;
 import piece.Piece;
+import piece.Queen;
+import piece.Rook;
 import errorMessages.ErrorMessages;
 
 public class Game {
@@ -36,6 +43,8 @@ public class Game {
     private BufferedReader inputStream;
 
     private Color playingColor = Color.WHITE;
+
+    private boolean check;
 
     public Game(Board board) throws FileNotFoundException {
 
@@ -62,6 +71,9 @@ public class Game {
         System.out.println("New game started, you can also load a saved game using the command :o");
 
         boolean printGameState = true;
+
+        this.check = false;
+
         while (isRunning) {
 
             try {
@@ -92,7 +104,7 @@ public class Game {
                         this.openGame();
                         break;
                     default:
-                        this.handleInput(userInput);
+                        this.handleMove(userInput);
                         break;
                 }
             } catch (IOException ioException) {
@@ -107,6 +119,10 @@ public class Game {
             } catch (NoInputGivenException noInputException) {
 
                 System.out.println(noInputException.getMessage());
+            } catch (GameoverException gameOver) {
+
+                System.out.println(gameOver.getMessage());
+                isRunning = false;
             }
         }
     }
@@ -147,8 +163,8 @@ public class Game {
         return true;
     }
 
-    private void handleInput(String moveString)
-            throws InvalidLocationException, InvalidMoveException, NoInputGivenException {
+    private void handleMove(String moveString)
+            throws InvalidLocationException, InvalidMoveException, NoInputGivenException, GameoverException {
 
         if (moveString.length() == 0) {
 
@@ -188,6 +204,25 @@ public class Game {
 
         movingPiece.moveTo(tLocation);
 
+        if (movingPiece instanceof King) {
+
+            if (movingPiece.color == Color.WHITE)
+                this.gameBoard.whiteKingLocation = tLocation;
+            else
+                this.gameBoard.blackKingLocation = tLocation;
+        }
+
+        this.check = isCheck(movingPiece);
+
+        System.out.println(this.check);
+
+        if (this.check == true) {
+
+            if (isCheckmate(movingPiece)) {
+                throw new GameoverException("Game over, winner is : " + this.playingColor);
+            }
+        }
+
         movesMade.get(this.playingColor).add(new Pair<Location, Location>(fLocation, tLocation));
 
         this.playingColor = this.playingColor.nextColor();
@@ -195,7 +230,7 @@ public class Game {
         return;
     }
 
-    private void openGame() throws IOException, InvalidLocationException, InvalidMoveException, NoInputGivenException {
+    private void openGame() throws IOException, InvalidLocationException, InvalidMoveException, NoInputGivenException, GameoverException {
 
         System.out.println("New game stopped, do you want to load a saved game? (y/n)");
 
@@ -227,7 +262,7 @@ public class Game {
 
             String aString[] = fileLine.split(", ", 2);
 
-            this.handleInput(aString[0] + aString[1]);
+            this.handleMove(aString[0] + aString[1]);
 
             fileLine = savefileReader.readLine();
         }
@@ -260,7 +295,8 @@ public class Game {
             return;
         }
 
-        System.out.println("Type the name of the save file (without the file extension)\nIf you give an existing file the old one will be overwritten");
+        System.out.println(
+                "Type the name of the save file (without the file extension)\nIf you give an existing file the old one will be overwritten");
 
         userInput = this.inputStream.readLine();
 
@@ -336,5 +372,80 @@ public class Game {
         System.out.println();
 
         return;
+    }
+
+    private boolean sameDiagonal(Piece piece1, Piece piece2) {
+
+        if (Math.abs(piece1.location.getRow() - piece2.location.getRow()) != Math
+                .abs(piece1.location.getCol() - piece2.location.getCol()))
+            return false;
+
+        return true;
+    }
+
+    private boolean isCheck(Piece movedPiece) {
+
+        Piece kingPiece;
+
+        if (this.playingColor == Color.WHITE)
+            kingPiece = this.gameBoard.getPieceAt(this.gameBoard.blackKingLocation);
+        else
+            kingPiece = this.gameBoard.getPieceAt(this.gameBoard.whiteKingLocation);
+
+        if (movedPiece instanceof Bishop) {
+
+            if (sameDiagonal(movedPiece, kingPiece) == false)
+                return false;
+
+            if (movedPiece.location.getCol() < kingPiece.location.getCol())
+                return this.gameBoard.freeDiagonalPath(movedPiece.location, kingPiece.location);
+            else
+                return this.gameBoard.freeAntidiagonalPath(movedPiece.location, kingPiece.location);
+
+        } else if (movedPiece instanceof Knight) {
+
+            return this.gameBoard.knightMoveCheck(movedPiece.location.getCol(),
+                    kingPiece.location.getCol(), movedPiece.location.getRow(), kingPiece.location.getRow());
+
+        } else if (movedPiece instanceof Pawn) {
+
+            if (sameDiagonal(movedPiece, kingPiece) == false)
+                return false;
+
+            if (this.gameBoard.chebyshevDistance(movedPiece.location, kingPiece.location) == 1)
+                return true;
+
+        } else if (movedPiece instanceof Queen) {
+
+            if (sameDiagonal(movedPiece, kingPiece) == true) {
+
+                if (movedPiece.location.getCol() < kingPiece.location.getCol())
+                    return this.gameBoard.freeDiagonalPath(movedPiece.location, kingPiece.location);
+                else
+                    return this.gameBoard.freeAntidiagonalPath(movedPiece.location, kingPiece.location);
+            }
+
+            if (movedPiece.location.getCol() == kingPiece.location.getCol())
+                return this.gameBoard.freeVerticalPath(movedPiece.location, kingPiece.location);
+
+            if (movedPiece.location.getRow() == kingPiece.location.getRow())
+                return this.gameBoard.freeHorizontalPath(movedPiece.location, kingPiece.location);
+
+        } else if (movedPiece instanceof Rook) {
+
+            if (movedPiece.location.getCol() == kingPiece.location.getCol())
+                return this.gameBoard.freeVerticalPath(movedPiece.location, kingPiece.location);
+
+            if (movedPiece.location.getRow() == kingPiece.location.getRow())
+                return this.gameBoard.freeHorizontalPath(movedPiece.location, kingPiece.location);
+
+        }
+
+        return false;
+    }
+
+    private boolean isCheckmate(Piece movedPiece) {
+
+        return false;
     }
 }

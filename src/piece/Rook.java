@@ -28,7 +28,8 @@ public class Rook extends Piece {
      */
     public void moveTo(Location newLoc) throws InvalidMoveException {
 
-        if (this.location.getCol() == newLoc.getCol() && this.board.freeVerticalPath(this.location, newLoc) == false)
+        if (this.location.getCol() == newLoc.getCol()
+                && this.board.freeVerticalPath(this.location, newLoc) == false)
             throw new InvalidMoveException("Rook piece cannot go over other pieces");
 
         if (this.location.getRow() == newLoc.getRow()

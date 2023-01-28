@@ -20,19 +20,6 @@ public class Knight extends Piece {
         super(color, location, board);
     }
 
-    private boolean knightMoveCheck(int startingColumn, int endingColumn, int startingRow, int endingRow) {
-
-        if ((startingColumn + 1 == endingColumn || startingColumn - 1 == endingColumn)
-                && (startingRow + 2 == endingRow || startingRow - 2 == endingRow))
-            return true;
-
-        if ((startingColumn + 2 == endingColumn || startingColumn - 2 == endingColumn)
-                && (startingRow + 1 == endingRow || startingRow - 1 == endingRow))
-            return true;
-
-        return false;
-    }
-
     /**
      * Impements a knight move to a new location specified by newLoc
      * 
@@ -40,7 +27,7 @@ public class Knight extends Piece {
      */
     public void moveTo(Location newLoc) throws InvalidMoveException {
 
-        if (!(this.knightMoveCheck(this.location.getCol(), newLoc.getCol(), this.location.getRow(), newLoc.getRow()))) {
+        if (!(this.board.knightMoveCheck(this.location.getCol(), newLoc.getCol(), this.location.getRow(), newLoc.getRow()))) {
             throw new InvalidMoveException(
                     "Knight can move two squares vertically and one square horizontally, or two squares horizontally and one square vertically, forming an \"L\"");
         }
