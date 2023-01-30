@@ -1,18 +1,13 @@
-## Getting Started
+## Run chess game
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+To run the program correctly go to the src directory of the project and run the command:
 
-## Folder Structure
+javac Main.class
+java Main
 
-The workspace contains two folders by default, where:
+**Important note**
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+To run the above command javac and java must be in your PATH enviroment, if not you will need to replace these with the actual path to the javac and java excecutables.
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
-
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+*Run on IDE*
+You can load the project on any Java IDE too (like intelliJ IDEA).

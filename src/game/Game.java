@@ -35,7 +35,8 @@ public class Game {
     private List<Pair<Location, Location>> movesMade;
 
     // file containing instruction on how to play the game
-    private File helpFile = new File("src/help/help.txt");
+    // ConsoleChess\src\help\help.txt
+    private File helpFile = new File(System.getProperty("user.dir") + "./help/help.txt");
 
     private BufferedReader helpFileReader;
 
@@ -52,6 +53,8 @@ public class Game {
         this.movesMade = new ArrayList<Pair<Location, Location>>();
 
         this.helpFileReader = new BufferedReader(new FileReader(this.helpFile));
+        // File file = new File("./src/help");
+        // for(String fileNames : file.list()) System.out.println(fileNames);
 
         this.inputStream = new BufferedReader(new InputStreamReader(System.in));
     }
@@ -239,8 +242,14 @@ public class Game {
 
         userInput = this.inputStream.readLine();
 
-        BufferedReader savefileReader = new BufferedReader(new FileReader("src/saves/" + userInput + ".txt"));
+        BufferedReader savefileReader = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/saves/" + userInput + ".txt"));
         String fileLine = savefileReader.readLine();
+
+        if (fileLine == null) {
+
+            savefileReader.close();
+            throw new IOException("Empty file, please provide a file with saved moves");
+        }
 
         while (fileLine != null) {
 
