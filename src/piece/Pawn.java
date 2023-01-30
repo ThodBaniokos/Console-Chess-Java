@@ -77,9 +77,9 @@ public class Pawn extends Piece {
             return;
         }
 
-        this.board.movePiece(this.location, newLoc);
+        if (this.hasMoved == false) this.hasMoved = true;
 
-        this.hasMoved = true;
+        this.board.movePiece(this.location, newLoc);
 
         return;
     }

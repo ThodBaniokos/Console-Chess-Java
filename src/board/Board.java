@@ -5,6 +5,7 @@ import piece.*;
 
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.List;
 
 import enums.*;
 
@@ -117,6 +118,40 @@ public class Board {
         this.board[to.getRow()][to.getCol()] = movingPiece;
 
         movingPiece.location = to;
+
+        // this.bitSetBoard.set((from.getRow() * 8) + from.getCol(), false);
+        // this.bitSetBoard.set((to.getRow() * 8) + to.getCol());
+
+        // List<Location> canReach = movingPiece.generatePath();
+
+        // BitSet testBitSet = new BitSet(64);
+
+        // for (Location loc : canReach) {
+
+        //     testBitSet.set((loc.getRow() * 8) + loc.getCol());
+        // }
+
+        // System.out.println("Current state of can white attack");
+        // this.printBitSet(canAttackWhite);
+
+        // System.out.println("Current state of test bit set");
+        // this.printBitSet(testBitSet);
+
+        // BitSet tempBitSet = canAttackWhite;
+
+        // tempBitSet.or(testBitSet);
+
+        // if (tempBitSet.get((to.getRow() * 8) + to.getCol()) == true)
+        //     tempBitSet.set((to.getRow() * 8) + to.getCol(), false);
+
+        // if (movingPiece instanceof Pawn) {
+        //     if (to.getRow() + 1 <= 7)
+        //         tempBitSet.set(((to.getRow() + 1) * 8) + to.getCol(), false);
+        // }
+
+        // this.printBitSet(tempBitSet);
+
+        // System.out.println(canReach);
     }
 
     public void movePieceCapturing(Location from, Location to) {
@@ -257,19 +292,6 @@ public class Board {
         return true;
     }
 
-    public boolean knightMoveCheck(int startingColumn, int endingColumn, int startingRow, int endingRow) {
-
-        if ((startingColumn + 1 == endingColumn || startingColumn - 1 == endingColumn)
-                && (startingRow + 2 == endingRow || startingRow - 2 == endingRow))
-            return true;
-
-        if ((startingColumn + 2 == endingColumn || startingColumn - 2 == endingColumn)
-                && (startingRow + 1 == endingRow || startingRow - 1 == endingRow))
-            return true;
-
-        return false;
-    }
-
     @Override
     public String toString() {
 
@@ -299,6 +321,22 @@ public class Board {
         return Math.max(Math.abs(from.getRow() - to.getRow()), Math.abs(from.getCol() - to.getCol()));
     }
 
+    public void printBitSet(BitSet toManipulate) {
+
+        StringBuilder setToPrint = new StringBuilder();
+
+        for (int i = 0; i < this.boardRows; i++) {
+
+            for (int j = 0; j < this.boardColumns; j++) {
+
+                setToPrint.append((toManipulate.get((i * 8) + j) == true) ? "1" : ".");
+            }
+            setToPrint.append("\n");
+        }
+
+        System.out.println(setToPrint);
+    }
+
     public void printCanAttack(Color givenColor) {
 
         BitSet toManipulate;
@@ -312,11 +350,33 @@ public class Board {
 
         for (int i = 0; i < this.boardRows; i++) {
 
-            for(int j = 0; j < this.boardColumns; j++) {
+            for (int j = 0; j < this.boardColumns; j++) {
 
                 setToPrint.append((toManipulate.get((i * 8) + j) == true) ? "1" : ".");
             }
             setToPrint.append("\n");
         }
+    }
+
+    public boolean sameDiagonal(Piece piece1, Piece piece2) {
+
+        if (Math.abs(piece1.location.getRow() - piece2.location.getRow()) != Math
+                .abs(piece1.location.getCol() - piece2.location.getCol()))
+            return false;
+
+        return true;
+    }
+
+    public boolean knightMoveCheck(int startingColumn, int endingColumn, int startingRow, int endingRow) {
+
+        if ((startingColumn + 1 == endingColumn || startingColumn - 1 == endingColumn)
+                && (startingRow + 2 == endingRow || startingRow - 2 == endingRow))
+            return true;
+
+        if ((startingColumn + 2 == endingColumn || startingColumn - 2 == endingColumn)
+                && (startingRow + 1 == endingRow || startingRow - 1 == endingRow))
+            return true;
+
+        return false;
     }
 }
