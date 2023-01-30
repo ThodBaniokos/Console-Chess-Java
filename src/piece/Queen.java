@@ -1,11 +1,17 @@
 package piece;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import Pair.Pair;
 import board.Board;
 import enums.Color;
 import exceptions.InvalidMoveException;
 import location.Location;
 
 public class Queen extends Piece {
+
+    private List<Pair<Integer, Integer>> possibleMoves;
 
     private final String cannotGoOverPieces = "Queen cannot go over other pieces";
 
@@ -21,6 +27,25 @@ public class Queen extends Piece {
 
         // call the parent class constructor
         super(color, location, board);
+
+        this.possibleMoves = new ArrayList<>();
+
+        for(int i = 1; i <= 8; i++) {
+
+            possibleMoves.add(new Pair<Integer, Integer>(i, i));
+            possibleMoves.add(new Pair<Integer, Integer>(i, -i));
+            possibleMoves.add(new Pair<Integer, Integer>(-i, i));
+            possibleMoves.add(new Pair<Integer, Integer>(-i, -i));
+
+        }
+
+        for (int i = 1; i <= 8; i++) {
+
+            possibleMoves.add(new Pair<Integer, Integer>(i, 0));
+            possibleMoves.add(new Pair<Integer, Integer>(0, i));
+            possibleMoves.add(new Pair<Integer, Integer>(-i, 0));
+            possibleMoves.add(new Pair<Integer, Integer>(0, -i));
+        }
     }
 
     /**
@@ -60,6 +85,26 @@ public class Queen extends Piece {
         this.board.movePiece(this.location, newLoc);
 
         return;
+    }
+
+    public List<Location> generatePath() {
+
+        List<Location> path = new ArrayList<>();
+
+        int currentRow = this.location.getRow() + 1;
+        int currentColumn = this.location.getCol() + 1;
+
+        for (Pair<Integer, Integer> possibleLoc : this.possibleMoves) {
+
+            int newRow = currentRow + possibleLoc.firstObj;
+            int newCol = currentColumn + possibleLoc.secondObj;
+
+            if ((newRow >= 1 && newRow <= 8) && ((newCol >= 1 && newCol <= 8))) {
+                path.add(new Location(newRow, newCol));
+            }
+        }
+
+        return path;
     }
 
     /**

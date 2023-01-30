@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import Pair.Pair;
@@ -19,21 +18,21 @@ import exceptions.InvalidLocationException;
 import exceptions.InvalidMoveException;
 import exceptions.NoInputGivenException;
 import location.Location;
-import piece.Bishop;
+// import piece.Bishop;
 import piece.King;
-import piece.Knight;
-import piece.Pawn;
+// import piece.Knight;
+// import piece.Pawn;
 import piece.Piece;
-import piece.Queen;
-import piece.Rook;
+// import piece.Queen;
+// import piece.Rook;
 import errorMessages.ErrorMessages;
 
 public class Game {
 
-    private Board gameBoard;
+    private Board board;
 
-    // linked hash map to preserve the order of moves made
-    private LinkedHashMap<Color, List<Pair<Location, Location>>> movesMade;
+    // list to save the moves
+    private List<Pair<Location, Location>> movesMade;
 
     // file containing instruction on how to play the game
     private File helpFile = new File("src/help/help.txt");
@@ -44,16 +43,13 @@ public class Game {
 
     private Color playingColor = Color.WHITE;
 
-    private boolean check;
+    // private boolean check;
 
     public Game(Board board) throws FileNotFoundException {
 
-        this.gameBoard = board;
+        this.board = board;
 
-        this.movesMade = new LinkedHashMap<>();
-
-        this.movesMade.put(Color.WHITE, new ArrayList<Pair<Location, Location>>());
-        this.movesMade.put(Color.BLACK, new ArrayList<Pair<Location, Location>>());
+        this.movesMade = new ArrayList<Pair<Location, Location>>();
 
         this.helpFileReader = new BufferedReader(new FileReader(this.helpFile));
 
@@ -61,8 +57,6 @@ public class Game {
     }
 
     public void play() throws IOException {
-
-        this.gameBoard.init();
 
         String userInput;
 
@@ -72,7 +66,7 @@ public class Game {
 
         boolean printGameState = true;
 
-        this.check = false;
+        // this.check = false;
 
         while (isRunning) {
 
@@ -80,7 +74,7 @@ public class Game {
 
                 if (printGameState == true) {
 
-                    System.out.println(gameBoard.toString());
+                    System.out.println(board.toString());
                     System.out.println("Currently playing: " + this.playingColor);
                     System.out.println("Type your next move or a command, for a list of commands type :h");
                 }
@@ -184,14 +178,14 @@ public class Game {
             throw new InvalidLocationException(moveString + ErrorMessages.sameLocationErrorMessage);
         }
 
-        Piece movingPiece = this.gameBoard.getPieceAt(fLocation);
+        Piece movingPiece = this.board.getPieceAt(fLocation);
 
         if (movingPiece == null) {
 
             throw new InvalidMoveException(ErrorMessages.noPieceInFromLocationErrorMessage + fLocation.toString());
         }
 
-        Piece landingSquarePiece = this.gameBoard.getPieceAt(tLocation);
+        Piece landingSquarePiece = this.board.getPieceAt(tLocation);
 
         if (landingSquarePiece != null && movingPiece.color == landingSquarePiece.color) {
 
@@ -207,30 +201,20 @@ public class Game {
         if (movingPiece instanceof King) {
 
             if (movingPiece.color == Color.WHITE)
-                this.gameBoard.whiteKingLocation = tLocation;
+                this.board.whiteKingLocation = tLocation;
             else
-                this.gameBoard.blackKingLocation = tLocation;
+                this.board.blackKingLocation = tLocation;
         }
 
-        this.check = isCheck(movingPiece);
-
-        System.out.println(this.check);
-
-        if (this.check == true) {
-
-            if (isCheckmate(movingPiece)) {
-                throw new GameoverException("Game over, winner is : " + this.playingColor);
-            }
-        }
-
-        movesMade.get(this.playingColor).add(new Pair<Location, Location>(fLocation, tLocation));
+        movesMade.add(new Pair<Location, Location>(fLocation, tLocation));
 
         this.playingColor = this.playingColor.nextColor();
 
         return;
     }
 
-    private void openGame() throws IOException, InvalidLocationException, InvalidMoveException, NoInputGivenException, GameoverException {
+    private void openGame() throws IOException, InvalidLocationException, InvalidMoveException, NoInputGivenException,
+            GameoverException {
 
         System.out.println("New game stopped, do you want to load a saved game? (y/n)");
 
@@ -306,27 +290,11 @@ public class Game {
 
         FileWriter fileWriter = new FileWriter(saveFile);
 
-        Color color = Color.WHITE;
-
-        int moveNumber = 0;
-
-        while (moveNumber < Math.max(this.movesMade.get(Color.WHITE).size(), this.movesMade.get(Color.BLACK).size())) {
-
-            if (this.movesMade.get(Color.BLACK).size() <= moveNumber && color == Color.BLACK) {
-                moveNumber++;
-                continue;
-            }
-
-            Pair<Location, Location> locationPair = this.movesMade.get(color).get(moveNumber);
+        for (Pair<Location, Location> locationPair : movesMade) {
 
             String toWrite = locationPair.firstObj.toString() + ", " + locationPair.secondObj.toString() + "\n";
 
             fileWriter.write(toWrite);
-
-            color = color.nextColor();
-
-            if (color == Color.WHITE)
-                moveNumber++;
         }
 
         fileWriter.close();
@@ -374,78 +342,153 @@ public class Game {
         return;
     }
 
-    private boolean sameDiagonal(Piece piece1, Piece piece2) {
+    // private boolean sameDiagonal(Piece piece1, Piece piece2) {
 
-        if (Math.abs(piece1.location.getRow() - piece2.location.getRow()) != Math
-                .abs(piece1.location.getCol() - piece2.location.getCol()))
-            return false;
+    //     if (Math.abs(piece1.location.getRow() - piece2.location.getRow()) != Math
+    //             .abs(piece1.location.getCol() - piece2.location.getCol()))
+    //         return false;
 
-        return true;
-    }
+    //     return true;
+    // }
 
-    private boolean isCheck(Piece movedPiece) {
+    // private boolean isCheck(Piece movedPiece) {
 
-        Piece kingPiece;
+    //     Piece kingPiece;
 
-        if (this.playingColor == Color.WHITE)
-            kingPiece = this.gameBoard.getPieceAt(this.gameBoard.blackKingLocation);
-        else
-            kingPiece = this.gameBoard.getPieceAt(this.gameBoard.whiteKingLocation);
+    //     if (this.playingColor == Color.WHITE)
+    //         kingPiece = this.board.getPieceAt(this.board.blackKingLocation);
+    //     else
+    //         kingPiece = this.board.getPieceAt(this.board.whiteKingLocation);
 
-        if (movedPiece instanceof Bishop) {
+    //     if (movedPiece instanceof Bishop) {
 
-            if (sameDiagonal(movedPiece, kingPiece) == false)
-                return false;
+    //         if (sameDiagonal(movedPiece, kingPiece) == false)
+    //             return false;
 
-            if (movedPiece.location.getCol() < kingPiece.location.getCol())
-                return this.gameBoard.freeDiagonalPath(movedPiece.location, kingPiece.location);
-            else
-                return this.gameBoard.freeAntidiagonalPath(movedPiece.location, kingPiece.location);
+    //         if (movedPiece.location.getCol() < kingPiece.location.getCol())
+    //             return this.board.freeDiagonalPath(movedPiece.location, kingPiece.location);
+    //         else
+    //             return this.board.freeAntidiagonalPath(movedPiece.location, kingPiece.location);
 
-        } else if (movedPiece instanceof Knight) {
+    //     } else if (movedPiece instanceof Knight) {
 
-            return this.gameBoard.knightMoveCheck(movedPiece.location.getCol(),
-                    kingPiece.location.getCol(), movedPiece.location.getRow(), kingPiece.location.getRow());
+    //         return this.board.knightMoveCheck(movedPiece.location.getCol(),
+    //                 kingPiece.location.getCol(), movedPiece.location.getRow(), kingPiece.location.getRow());
 
-        } else if (movedPiece instanceof Pawn) {
+    //     } else if (movedPiece instanceof Pawn) {
 
-            if (sameDiagonal(movedPiece, kingPiece) == false)
-                return false;
+    //         if (sameDiagonal(movedPiece, kingPiece) == false)
+    //             return false;
 
-            if (this.gameBoard.chebyshevDistance(movedPiece.location, kingPiece.location) == 1)
-                return true;
+    //         if (this.board.chebyshevDistance(movedPiece.location, kingPiece.location) == 1)
+    //             return true;
 
-        } else if (movedPiece instanceof Queen) {
+    //     } else if (movedPiece instanceof Queen) {
 
-            if (sameDiagonal(movedPiece, kingPiece) == true) {
+    //         if (sameDiagonal(movedPiece, kingPiece) == true) {
 
-                if (movedPiece.location.getCol() < kingPiece.location.getCol())
-                    return this.gameBoard.freeDiagonalPath(movedPiece.location, kingPiece.location);
-                else
-                    return this.gameBoard.freeAntidiagonalPath(movedPiece.location, kingPiece.location);
-            }
+    //             if (movedPiece.location.getCol() < kingPiece.location.getCol())
+    //                 return this.board.freeDiagonalPath(movedPiece.location, kingPiece.location);
+    //             else
+    //                 return this.board.freeAntidiagonalPath(movedPiece.location, kingPiece.location);
+    //         }
 
-            if (movedPiece.location.getCol() == kingPiece.location.getCol())
-                return this.gameBoard.freeVerticalPath(movedPiece.location, kingPiece.location);
+    //         if (movedPiece.location.getCol() == kingPiece.location.getCol())
+    //             return this.board.freeVerticalPath(movedPiece.location, kingPiece.location);
 
-            if (movedPiece.location.getRow() == kingPiece.location.getRow())
-                return this.gameBoard.freeHorizontalPath(movedPiece.location, kingPiece.location);
+    //         if (movedPiece.location.getRow() == kingPiece.location.getRow())
+    //             return this.board.freeHorizontalPath(movedPiece.location, kingPiece.location);
 
-        } else if (movedPiece instanceof Rook) {
+    //     } else if (movedPiece instanceof Rook) {
 
-            if (movedPiece.location.getCol() == kingPiece.location.getCol())
-                return this.gameBoard.freeVerticalPath(movedPiece.location, kingPiece.location);
+    //         if (movedPiece.location.getCol() == kingPiece.location.getCol())
+    //             return this.board.freeVerticalPath(movedPiece.location, kingPiece.location);
 
-            if (movedPiece.location.getRow() == kingPiece.location.getRow())
-                return this.gameBoard.freeHorizontalPath(movedPiece.location, kingPiece.location);
+    //         if (movedPiece.location.getRow() == kingPiece.location.getRow())
+    //             return this.board.freeHorizontalPath(movedPiece.location, kingPiece.location);
 
-        }
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
-    private boolean isCheckmate(Piece movedPiece) {
+    // List<Location> generatePossibleKingMoves(Piece kingPiece) {
 
-        return false;
-    }
+    //     int kingPieceRow = kingPiece.location.getRow() + 1;
+    //     int kingPieceCol = kingPiece.location.getCol() + 1;
+
+    //     List<Location> possibleMoves = new ArrayList<>();
+
+    //     // down
+    //     if (kingPieceRow - 1 >= 1 && kingPieceRow - 1 <= 8)
+    //         possibleMoves.add(new Location(kingPieceRow - 1, kingPieceCol));
+
+    //     // up
+    //     if (kingPieceRow + 1 >= 1 && kingPieceRow + 1 <= 8)
+    //         possibleMoves.add(new Location(kingPieceRow + 1, kingPieceCol));
+
+    //     // left
+    //     if (kingPieceCol - 1 >= 1 && kingPieceCol - 1 <= 8)
+    //         possibleMoves.add(new Location(kingPieceRow, kingPieceCol - 1));
+
+    //     // right
+    //     if (kingPieceCol + 1 >= 1 && kingPieceCol + 1 <= 8)
+    //         possibleMoves.add(new Location(kingPieceRow, kingPieceCol + 1));
+
+    //     // diag right up
+    //     if ((kingPieceRow + 1 >= 1 && kingPieceRow + 1 <= 8) && (kingPieceCol + 1 >= 1 && kingPieceCol + 1 <= 8))
+    //         possibleMoves.add(new Location(kingPieceRow + 1, kingPieceCol + 1));
+
+    //     // diag left up
+    //     if ((kingPieceRow + 1 >= 1 && kingPieceRow + 1 <= 8) && (kingPieceCol - 1 >= 1 && kingPieceCol - 1 <= 8))
+    //         possibleMoves.add(new Location(kingPieceRow + 1, kingPieceCol - 1));
+
+    //     // diag right down
+    //     if ((kingPieceRow - 1 >= 1 && kingPieceRow - 1 <= 8) && (kingPieceCol + 1 >= 1 && kingPieceCol + 1 <= 8))
+    //         possibleMoves.add(new Location(kingPieceRow - 1, kingPieceCol + 1));
+
+    //     // diag left down
+    //     if ((kingPieceRow - 1 >= 1 && kingPieceRow - 1 <= 8) && (kingPieceCol - 1 >= 1 && kingPieceCol - 1 <= 8))
+    //         possibleMoves.add(new Location(kingPieceRow - 1, kingPieceCol - 1));
+
+    //     return possibleMoves;
+    // }
+
+    // private boolean isCheckmate(Piece movedPiece) {
+
+    //     Piece kingPiece;
+
+    //     boolean result = true;
+
+    //     if (this.playingColor == Color.WHITE)
+    //         kingPiece = this.board.getPieceAt(this.board.blackKingLocation);
+    //     else
+    //         kingPiece = this.board.getPieceAt(this.board.whiteKingLocation);
+
+    //     List<Location> possibleKingMoves = generatePossibleKingMoves(kingPiece);
+
+    //     Location kingPieceLocation = kingPiece.location;
+
+    //     System.out.println(possibleKingMoves);
+
+    //     for (Location possibleMove : possibleKingMoves) {
+
+    //         Piece pieceAtPosMove = this.board.getPieceAt(possibleMove);
+
+    //         if (pieceAtPosMove != null && pieceAtPosMove.color == kingPiece.color) {
+    //             continue;
+    //         }
+
+    //         kingPiece.location = possibleMove;
+
+    //         result = result && this.isCheck(movedPiece);
+
+    //         if (result == false)
+    //             break;
+    //     }
+
+    //     kingPiece.location = kingPieceLocation;
+
+    //     return result;
+    // }
 }

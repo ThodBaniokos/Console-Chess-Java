@@ -3,7 +3,8 @@ package board;
 import location.Location;
 import piece.*;
 
-import java.util.LinkedHashMap;
+import java.util.BitSet;
+import java.util.HashMap;
 
 import enums.*;
 
@@ -14,7 +15,13 @@ public class Board {
     public Location whiteKingLocation;
     public Location blackKingLocation;
 
-    public LinkedHashMap<Piece, Boolean> hasPawnMoved;
+    public BitSet canAttackWhite;
+
+    public BitSet canAttackBlack;
+
+    public BitSet bitSetBoard;
+
+    public HashMap<Piece, Boolean> hasPawnMoved;
 
     public Piece[][] board;
 
@@ -25,43 +32,80 @@ public class Board {
 
     public void init() {
 
-        this.hasPawnMoved = new LinkedHashMap<>();
+        this.canAttackWhite = new BitSet(64);
+
+        this.canAttackBlack = new BitSet(64);
+
+        this.bitSetBoard = new BitSet(64);
+
+        this.hasPawnMoved = new HashMap<>();
 
         // initiaze empty board of pieces
         this.board = new Piece[this.boardRows][this.boardColumns];
 
         // create the white pieces first
+        // ROW * 8 + COLUMN
         for (int i = 0; i < 8; i++) {
+            this.bitSetBoard.set((1 * 8) + i);
             this.board[1][i] = new Pawn(Color.WHITE, new Location(2, i + 1), this);
         }
 
         this.board[0][0] = new Rook(Color.WHITE, new Location(1, 1), this);
+        this.bitSetBoard.set(0);
         this.board[0][1] = new Knight(Color.WHITE, new Location(1, 2), this);
+        this.bitSetBoard.set(1);
         this.board[0][2] = new Bishop(Color.WHITE, new Location(1, 3), this);
+        this.bitSetBoard.set(2);
         this.board[0][3] = new Queen(Color.WHITE, new Location(1, 4), this);
+        this.bitSetBoard.set(3);
         this.board[0][4] = new King(Color.WHITE, new Location(1, 5), this);
+        this.bitSetBoard.set(4);
         this.board[0][5] = new Bishop(Color.WHITE, new Location(1, 6), this);
+        this.bitSetBoard.set(5);
         this.board[0][6] = new Knight(Color.WHITE, new Location(1, 7), this);
+        this.bitSetBoard.set(6);
         this.board[0][7] = new Rook(Color.WHITE, new Location(1, 8), this);
+        this.bitSetBoard.set(7);
 
         this.whiteKingLocation = this.board[0][4].location;
+
+        // set the initial attacking positions of white
+        for (int i = 0; i < this.boardColumns; i++) {
+
+            this.canAttackWhite.set((2 * 8) + i);
+        }
 
         // create the black pieces
         for (int i = 0; i < 8; i++) {
 
+            this.bitSetBoard.set((6 * 8) + i);
             this.board[6][i] = new Pawn(Color.BLACK, new Location(7, i + 1), this);
         }
 
         this.board[7][0] = new Rook(Color.BLACK, new Location(8, 1), this);
+        this.bitSetBoard.set((7 * 8));
         this.board[7][1] = new Knight(Color.BLACK, new Location(8, 2), this);
+        this.bitSetBoard.set((7 * 8) + 1);
         this.board[7][2] = new Bishop(Color.BLACK, new Location(8, 3), this);
+        this.bitSetBoard.set((7 * 8) + 2);
         this.board[7][3] = new Queen(Color.BLACK, new Location(8, 4), this);
+        this.bitSetBoard.set((7 * 8) + 3);
         this.board[7][4] = new King(Color.BLACK, new Location(8, 5), this);
+        this.bitSetBoard.set((7 * 8) + 4);
         this.board[7][5] = new Bishop(Color.BLACK, new Location(8, 6), this);
+        this.bitSetBoard.set((7 * 8) + 5);
         this.board[7][6] = new Knight(Color.BLACK, new Location(8, 7), this);
+        this.bitSetBoard.set((7 * 8) + 6);
         this.board[7][7] = new Rook(Color.BLACK, new Location(8, 8), this);
+        this.bitSetBoard.set((7 * 8) + 7);
 
         this.blackKingLocation = this.board[7][4].location;
+
+        // set the initial attacking positions of black
+        for (int i = 0; i < this.boardColumns; i++) {
+
+            this.canAttackBlack.set((5 * 8) + i);
+        }
     }
 
     public void movePiece(Location from, Location to) {
@@ -255,4 +299,24 @@ public class Board {
         return Math.max(Math.abs(from.getRow() - to.getRow()), Math.abs(from.getCol() - to.getCol()));
     }
 
+    public void printCanAttack(Color givenColor) {
+
+        BitSet toManipulate;
+
+        if (givenColor == Color.WHITE)
+            toManipulate = this.canAttackWhite;
+        else
+            toManipulate = this.canAttackBlack;
+
+        StringBuilder setToPrint = new StringBuilder();
+
+        for (int i = 0; i < this.boardRows; i++) {
+
+            for(int j = 0; j < this.boardColumns; j++) {
+
+                setToPrint.append((toManipulate.get((i * 8) + j) == true) ? "1" : ".");
+            }
+            setToPrint.append("\n");
+        }
+    }
 }

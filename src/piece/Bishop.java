@@ -1,5 +1,9 @@
 package piece;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import Pair.Pair;
 import board.Board;
 import enums.Color;
 import exceptions.InvalidMoveException;
@@ -8,6 +12,7 @@ import location.Location;
 public class Bishop extends Piece {
 
     private final String cannotGoOverPieces = "Bishop cannot go over other pieces";
+    private List<Pair<Integer, Integer>> possibleMoves;
 
     /**
      * Constructor of the Bishop class, child of abstract class Piece
@@ -20,6 +25,17 @@ public class Bishop extends Piece {
     public Bishop(Color color, Location location, Board board) {
 
         super(color, location, board);
+
+        this.possibleMoves = new ArrayList<>();
+
+        for(int i = 1; i <= 8; i++) {
+
+            possibleMoves.add(new Pair<Integer, Integer>(i, i));
+            possibleMoves.add(new Pair<Integer, Integer>(i, -i));
+            possibleMoves.add(new Pair<Integer, Integer>(-i, i));
+            possibleMoves.add(new Pair<Integer, Integer>(-i, -i));
+
+        }
     }
 
     /**
@@ -51,6 +67,26 @@ public class Bishop extends Piece {
         this.board.movePiece(this.location, newLoc);
 
         return;
+    }
+
+    public List<Location> generatePath() {
+
+        List<Location> path = new ArrayList<>();
+
+        int currentRow = this.location.getRow() + 1;
+        int currentColumn = this.location.getCol() + 1;
+
+        for (Pair<Integer, Integer> possibleLoc : this.possibleMoves) {
+
+            int newRow = currentRow + possibleLoc.firstObj;
+            int newCol = currentColumn + possibleLoc.secondObj;
+
+            if ((newRow >= 1 && newRow <= 8) && ((newCol >= 1 && newCol <= 8))) {
+                path.add(new Location(newRow, newCol));
+            }
+        }
+
+        return path;
     }
 
     /**

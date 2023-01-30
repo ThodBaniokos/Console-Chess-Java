@@ -1,5 +1,7 @@
 package piece;
 
+import java.util.List;
+
 import board.Board;
 import enums.Color;
 import exceptions.InvalidMoveException;
@@ -30,4 +32,6 @@ public abstract class Piece {
      * @throws InvalidMoveException
      */
     public abstract void moveTo(Location newLoc) throws InvalidMoveException;
+
+    public abstract List<Location> generatePath();
 }

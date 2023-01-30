@@ -26,10 +26,10 @@ public class Location {
     public Location(int r, int c) {
 
         // set the row
-        this.row = r - 1;
+        this.row = (r != 0) ? r - 1 : r;
 
         // set the column
-        this.column = c - 1;
+        this.column = (c != 0) ? c - 1 : c;
 
     }
 
